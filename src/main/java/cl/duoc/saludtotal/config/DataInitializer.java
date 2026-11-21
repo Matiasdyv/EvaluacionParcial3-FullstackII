@@ -3,12 +3,17 @@ package cl.duoc.saludtotal.config;
 import cl.duoc.saludtotal.model.Especialidad;
 import cl.duoc.saludtotal.model.Medico;
 import cl.duoc.saludtotal.model.Rol;
+import cl.duoc.saludtotal.model.Usuario;
 import cl.duoc.saludtotal.repository.EspecialidadRepository;
 import cl.duoc.saludtotal.repository.MedicoRepository;
 import cl.duoc.saludtotal.repository.RolRepository;
+import cl.duoc.saludtotal.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.time.LocalDate;
 
 @Configuration
 public class DataInitializer {
@@ -16,7 +21,9 @@ public class DataInitializer {
     @Bean
     CommandLineRunner cargarDatosIniciales(RolRepository roles,
                                            EspecialidadRepository especialidades,
-                                           MedicoRepository medicos) {
+                                           MedicoRepository medicos,
+                                           UsuarioRepository usuarios,
+                                           PasswordEncoder encoder) {
         return args -> {
             if (roles.count() == 0) {
                 roles.save(new Rol(null, "ADMIN"));
@@ -29,6 +36,18 @@ public class DataInitializer {
                 crear(especialidades, medicos, "Ginecología", "Dra. Ana González");
                 crear(especialidades, medicos, "Traumatología", "Dr. Carlos Soto");
                 crear(especialidades, medicos, "Dermatología", "Dra. Elena Rojas");
+            }
+
+            if (!usuarios.existsByEmail("admin@duoc.cl")) {
+                Usuario admin = new Usuario();
+                admin.setRut("11111111-1");
+                admin.setNombre("Administrador");
+                admin.setEmail("admin@duoc.cl");
+                admin.setFechaNacimiento(LocalDate.of(1990, 1, 1));
+                admin.setPassword(encoder.encode("admin123"));
+                admin.setRol(roles.findByNombre("ADMIN").orElseThrow());
+                admin.setActivo(true);
+                usuarios.save(admin);
             }
         };
     }

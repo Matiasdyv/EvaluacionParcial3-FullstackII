@@ -27,13 +27,12 @@ public class CitaService {
         this.medicos = medicos;
     }
 
-    public Cita agendar(CitaRequest req) {
-        Usuario paciente = usuarios.findById(req.pacienteId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Paciente no encontrado: " + req.pacienteId()));
+    public Cita agendar(String emailPaciente, CitaRequest req) {
+        Usuario paciente = usuarios.findByEmail(emailPaciente)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
         Medico medico = medicos.findById(req.medicoId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Médico no encontrado: " + req.medicoId()));
 
-        // Regla: un médico no puede tener 2 citas activas a la misma fecha y hora
         if (citas.existsByMedicoIdAndFechaAndHoraAndEstadoNot(
                 medico.getId(), req.fecha(), req.hora(), EstadoCita.CANCELADA)) {
             throw new ConflictoException("El médico ya tiene una cita en esa fecha y hora");
@@ -52,14 +51,30 @@ public class CitaService {
         return citas.findAll();
     }
 
-    public List<Cita> listarPorPaciente(Long pacienteId) {
-        return citas.findByPacienteIdOrderByFechaDescHoraDesc(pacienteId);
+    public List<Cita> listarDelPaciente(String emailPaciente) {
+        Usuario paciente = usuarios.findByEmail(emailPaciente)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
+        return citas.findByPacienteIdOrderByFechaDescHoraDesc(paciente.getId());
     }
 
+    /** Uso del administrador. */
     public Cita cambiarEstado(Long id, EstadoCita estado) {
-        Cita c = citas.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Cita no encontrada: " + id));
+        Cita c = buscar(id);
         c.setEstado(estado);
         return citas.save(c);
+    }
+
+    public Cita cancelarPropia(Long id, String emailPaciente) {
+        Cita c = buscar(id);
+        if (!c.getPaciente().getEmail().equals(emailPaciente)) {
+            throw new RecursoNoEncontradoException("Cita no encontrada: " + id);
+        }
+        c.setEstado(EstadoCita.CANCELADA);
+        return citas.save(c);
+    }
+
+    private Cita buscar(Long id) {
+        return citas.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cita no encontrada: " + id));
     }
 }

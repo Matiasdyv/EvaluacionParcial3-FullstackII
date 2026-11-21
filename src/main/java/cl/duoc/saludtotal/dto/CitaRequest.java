@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public record CitaRequest(
-        @NotNull(message = "El paciente es obligatorio") Long pacienteId,
         @NotNull(message = "El médico es obligatorio") Long medicoId,
         @NotNull(message = "La fecha es obligatoria") @FutureOrPresent(message = "La fecha no puede ser pasada") LocalDate fecha,
         @NotNull(message = "La hora es obligatoria") LocalTime hora,
