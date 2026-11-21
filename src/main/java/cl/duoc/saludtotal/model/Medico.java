@@ -21,6 +21,14 @@ public class Medico {
     @JoinColumn(name = "especialidad_id")
     private Especialidad especialidad;
 
+    @Column(length = 5)
+    private String horaInicio;
+
+    @Column(length = 5)
+    private String horaFin;
+
+    private Integer duracionMinutos;
+
     @Column(nullable = false)
     private boolean activo = true;
 }

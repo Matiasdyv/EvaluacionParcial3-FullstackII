@@ -42,6 +42,11 @@ public class CitaController {
         return CitaResponse.de(servicio.cambiarEstado(id, req.estado()));
     }
 
+    @PutMapping("/{id}/confirmar")
+    public CitaResponse confirmar(@PathVariable Long id, Authentication auth) {
+        return CitaResponse.de(servicio.confirmarPropia(id, auth.getName()));
+    }
+
     @PutMapping("/{id}/cancelar")
     public CitaResponse cancelar(@PathVariable Long id, Authentication auth) {
         return CitaResponse.de(servicio.cancelarPropia(id, auth.getName()));

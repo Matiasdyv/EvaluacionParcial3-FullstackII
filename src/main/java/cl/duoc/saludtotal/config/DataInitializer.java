@@ -14,9 +14,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Configuration
 public class DataInitializer {
+
+    private record MedicoInicial(String especialidad, String nombre, String horaInicio, String horaFin, int duracion) {}
+
+    private static final List<MedicoInicial> MEDICOS = List.of(
+            new MedicoInicial("Medicina General", "Dra. María Pérez", "08:00", "17:00", 20),
+            new MedicoInicial("Pediatría", "Dr. Juan López", "09:00", "18:00", 25),
+            new MedicoInicial("Ginecología", "Dra. Ana González", "08:00", "16:00", 30),
+            new MedicoInicial("Traumatología", "Dr. Carlos Soto", "10:00", "19:00", 25),
+            new MedicoInicial("Dermatología", "Dra. Elena Rojas", "09:00", "17:00", 20)
+    );
 
     @Bean
     CommandLineRunner cargarDatosIniciales(RolRepository roles,
@@ -31,11 +42,25 @@ public class DataInitializer {
             }
 
             if (especialidades.count() == 0) {
-                crear(especialidades, medicos, "Medicina General", "Dra. María Pérez");
-                crear(especialidades, medicos, "Pediatría", "Dr. Juan López");
-                crear(especialidades, medicos, "Ginecología", "Dra. Ana González");
-                crear(especialidades, medicos, "Traumatología", "Dr. Carlos Soto");
-                crear(especialidades, medicos, "Dermatología", "Dra. Elena Rojas");
+                for (MedicoInicial mi : MEDICOS) {
+                    Especialidad e = especialidades.save(new Especialidad(null, mi.especialidad()));
+                    Medico m = new Medico();
+                    m.setNombre(mi.nombre());
+                    m.setEspecialidad(e);
+                    m.setActivo(true);
+                    medicos.save(m);
+                }
+            }
+
+            for (Medico m : medicos.findAll()) {
+                if (m.getHoraInicio() == null) {
+                    MEDICOS.stream().filter(mi -> mi.nombre().equals(m.getNombre())).findFirst().ifPresent(mi -> {
+                        m.setHoraInicio(mi.horaInicio());
+                        m.setHoraFin(mi.horaFin());
+                        m.setDuracionMinutos(mi.duracion());
+                        medicos.save(m);
+                    });
+                }
             }
 
             if (!usuarios.existsByEmail("admin@duoc.cl")) {
@@ -50,14 +75,5 @@ public class DataInitializer {
                 usuarios.save(admin);
             }
         };
-    }
-
-    private void crear(EspecialidadRepository er, MedicoRepository mr, String especialidad, String medico) {
-        Especialidad e = er.save(new Especialidad(null, especialidad));
-        Medico m = new Medico();
-        m.setNombre(medico);
-        m.setEspecialidad(e);
-        m.setActivo(true);
-        mr.save(m);
     }
 }

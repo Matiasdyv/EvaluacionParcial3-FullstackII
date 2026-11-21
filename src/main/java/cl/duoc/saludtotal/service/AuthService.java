@@ -28,15 +28,23 @@ public class AuthService {
     }
 
     public AuthResponse registrar(RegistroRequest req) {
-        if (usuarios.existsByRut(req.rut())) throw new ConflictoException("Ya existe un usuario con ese RUT");
-        if (usuarios.existsByEmail(req.email())) throw new ConflictoException("Ya existe un usuario con ese correo");
+        if (usuarios.existsByRut(req.rut())) throw new ConflictoException("Ya existe una cuenta con ese RUT.");
+        if (usuarios.existsByEmail(req.email())) throw new ConflictoException("Ya existe una cuenta con ese correo.");
 
         Usuario u = new Usuario();
         u.setRut(req.rut());
         u.setNombre(req.nombre());
+        u.setApellidoPaterno(req.apellidoPaterno());
+        u.setApellidoMaterno(req.apellidoMaterno());
         u.setEmail(req.email());
         u.setTelefono(req.telefono());
         u.setFechaNacimiento(req.fechaNacimiento());
+        u.setNroDocumento(req.nroDocumento());
+        u.setSeguro(req.seguro());
+        u.setGenero(req.genero());
+        u.setRegion(req.region());
+        u.setDireccion(req.direccion());
+        u.setOfertas(req.ofertas());
         u.setPassword(encoder.encode(req.password()));
         u.setRol(roles.findByNombre("PACIENTE").orElseThrow());
         u.setActivo(true);
@@ -46,10 +54,10 @@ public class AuthService {
     public AuthResponse login(LoginRequest req) {
         String id = req.identificador().trim();
         Usuario u = (id.contains("@") ? usuarios.findByEmail(id) : usuarios.findByRut(id))
-                .orElseThrow(() -> new CredencialesInvalidasException("Credenciales incorrectas"));
+                .orElseThrow(() -> new CredencialesInvalidasException("RUT o contraseña incorrectos."));
 
         if (!u.isActivo() || !encoder.matches(req.password(), u.getPassword())) {
-            throw new CredencialesInvalidasException("Credenciales incorrectas");
+            throw new CredencialesInvalidasException("RUT o contraseña incorrectos.");
         }
         return respuesta(u);
     }

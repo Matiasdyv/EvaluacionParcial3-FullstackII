@@ -20,6 +20,12 @@ public class Usuario {
     @Column(nullable = false, length = 100)
     private String nombre;
 
+    @Column(length = 100)
+    private String apellidoPaterno;
+
+    @Column(length = 100)
+    private String apellidoMaterno;
+
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
@@ -27,6 +33,23 @@ public class Usuario {
     private String telefono;
 
     private LocalDate fechaNacimiento;
+
+    @Column(length = 10)
+    private String nroDocumento;
+
+    @Column(length = 20)
+    private String seguro;
+
+    @Column(length = 20)
+    private String genero;
+
+    @Column(length = 100)
+    private String region;
+
+    @Column(length = 200)
+    private String direccion;
+
+    private Boolean ofertas;
 
     @Column(nullable = false)
     private String password;
