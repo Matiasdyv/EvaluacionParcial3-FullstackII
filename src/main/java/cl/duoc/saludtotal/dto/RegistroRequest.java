@@ -1,12 +1,14 @@
 package cl.duoc.saludtotal.dto;
 
+import cl.duoc.saludtotal.validation.RutValido;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 
 public record RegistroRequest(
         @NotBlank(message = "El RUT es obligatorio")
-        @Pattern(regexp = "^\\d{7,8}-[\\dkK]$", message = "RUT inválido (ej: 12345678-9)") String rut,
+        @Pattern(regexp = "^\\d{7,8}-[\\dkK]$", message = "RUT inválido (ej: 12345678-5)")
+        @RutValido String rut,
         @NotBlank(message = "El nombre es obligatorio") @Size(max = 100) String nombre,
         @Size(max = 100) String apellidoPaterno,
         @Size(max = 100) String apellidoMaterno,
